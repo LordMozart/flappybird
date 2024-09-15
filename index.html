@@ -41,7 +41,7 @@
     <div id="startScreen">
         <button id="startButton">Start Game</button>
     </div>
-    <canvas id="gameCanvas" width="320" height="480"></canvas>
+    <canvas id="gameCanvas" width="600" height="480"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -56,8 +56,8 @@
                 y: canvas.height / 2,
                 width: 20,
                 height: 20,
-                gravity: 0.6,
-                lift: -12,
+                gravity: 0.3,  // Slower fall speed
+                lift: -10,     // Slower upward movement
                 velocity: 0,
             };
             pipes = [];
@@ -91,12 +91,12 @@
             if (bird.y < 0) bird.y = 0;
         }
 
-        const pipeWidth = 50;
-        const pipeGap = 100;
-        const pipeSpeed = 2;
+        const pipeWidth = 60;   // Slightly wider pipes
+        const pipeGap = 120;    // Gap between top and bottom pipes
+        const pipeSpeed = 1.5;  // Slower pipe speed
 
         function updatePipes() {
-            if (frame % 90 === 0) {
+            if (frame % 100 === 0) {  // Generate pipes slightly slower
                 const top = Math.random() * (canvas.height - pipeGap - 50) + 25;
                 const bottom = canvas.height - top - pipeGap;
                 pipes.push({ x: canvas.width, top, bottom });
