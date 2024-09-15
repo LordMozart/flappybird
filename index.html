@@ -107,9 +107,10 @@
 
         // Game settings
         const defaultGravity = 0.04;
+        const defaultPipeSpeed = 1.5;
         const jumpStrength = -2.5;
         let gravity = defaultGravity;
-        let pipeSpeed = 1.5;
+        let pipeSpeed = defaultPipeSpeed;
         const pipeInterval = 240;
 
         function resetGame() {
@@ -212,13 +213,16 @@
 
         function updateGameSpeed() {
             if (isMobileMode) {
-                pipeSpeed = 1.5 * 2; // Double the pipe speed
-                gravity = defaultGravity * 2; // Double the gravity
+                pipeSpeed = defaultPipeSpeed * 2; // Double the pipe speed
+                bird.gravity = defaultGravity; // Gravity remains unchanged
+                bird.velocity *= 2; // Double the velocity
+                mobileModeButton.textContent = 'Mobile Mode On';
             } else {
-                pipeSpeed = 1.5;
-                gravity = defaultGravity;
+                pipeSpeed = defaultPipeSpeed;
+                bird.gravity = defaultGravity;
+                bird.velocity = 0; // Reset velocity
+                mobileModeButton.textContent = 'Mobile Mode Off';
             }
-            bird.gravity = gravity;
         }
 
         function gameLoop() {
@@ -262,7 +266,6 @@
 
         mobileModeButton.addEventListener('click', () => {
             isMobileMode = !isMobileMode;
-            mobileModeButton.textContent = isMobileMode ? 'Mobile Mode On' : 'Mobile Mode Off';
             updateGameSpeed();
         });
 
