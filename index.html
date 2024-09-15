@@ -56,8 +56,8 @@
                 y: canvas.height / 2,
                 width: 20,
                 height: 20,
-                gravity: 0.3,  // Slower fall speed
-                lift: -10,     // Slower upward movement
+                gravity: 0.1,  // Slower fall speed
+                lift: -10,     // Lift value
                 velocity: 0,
             };
             pipes = [];
@@ -91,12 +91,13 @@
             if (bird.y < 0) bird.y = 0;
         }
 
-        const pipeWidth = 60;   // Slightly wider pipes
-        const pipeGap = 120;    // Gap between top and bottom pipes
-        const pipeSpeed = 1.5;  // Slower pipe speed
+        const pipeWidth = 60;   // Width of the pipes
+        const pipeGap = 120;    // Gap between the top and bottom pipes
+        const pipeSpeed = 1.5;  // Speed at which pipes move
+        const pipeInterval = 120; // Time between pipe spawns (in frames)
 
         function updatePipes() {
-            if (frame % 100 === 0) {  // Generate pipes slightly slower
+            if (frame % pipeInterval === 0) {  // Generate pipes less frequently
                 const top = Math.random() * (canvas.height - pipeGap - 50) + 25;
                 const bottom = canvas.height - top - pipeGap;
                 pipes.push({ x: canvas.width, top, bottom });
