@@ -144,6 +144,14 @@
             gameRunning = false;
             title.style.display = 'block'; // Show title when game is reset
             updateGameSpeed();
+
+            // Initialize first 3 pipes
+            for (let i = 0; i < 3; i++) {
+                const xPosition = canvas.width / 2 + (i * (canvas.width / 3)); // Position pipes halfway through
+                const top = Math.random() * (canvas.height - pipeGap - 50) + 25;
+                const bottom = canvas.height - top - pipeGap;
+                pipes.push({ x: xPosition, top, bottom });
+            }
         }
 
         function startGame() {
