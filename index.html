@@ -48,12 +48,13 @@
             user-select: none;  /* Prevent text selection */
         }
         #score {
-            top: 20px;
+            bottom: 20px;
             left: 20px;
         }
         #highScore {
-            top: 50px; /* Moved down by 30px */
-            right: 20px;
+            bottom: 20px;
+            left: 20px; /* Align with the score */
+            margin-top: 40px; /* Space between score and high score */
         }
         #title {
             position: absolute;
@@ -108,10 +109,11 @@
         // Game settings
         const defaultGravity = 0.04;
         const defaultPipeSpeed = 1.5;
+        const defaultPipeInterval = 240;
         const jumpStrength = -2.5;
         let gravity = defaultGravity;
         let pipeSpeed = defaultPipeSpeed;
-        const pipeInterval = 240;
+        let pipeInterval = defaultPipeInterval;
 
         function resetGame() {
             bird = {
@@ -214,13 +216,13 @@
         function updateGameSpeed() {
             if (isMobileMode) {
                 pipeSpeed = defaultPipeSpeed * 2; // Double the pipe speed
-                bird.gravity = defaultGravity; // Gravity remains unchanged
-                bird.velocity *= 2; // Double the velocity
+                pipeInterval = defaultPipeInterval / 2; // Double the pipe spawn rate
+                gravity = defaultGravity * 2; // Double the gravity
                 mobileModeButton.textContent = 'Mobile Mode On';
             } else {
                 pipeSpeed = defaultPipeSpeed;
-                bird.gravity = defaultGravity;
-                bird.velocity = 0; // Reset velocity
+                pipeInterval = defaultPipeInterval;
+                gravity = defaultGravity;
                 mobileModeButton.textContent = 'Mobile Mode Off';
             }
         }
