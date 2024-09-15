@@ -8,7 +8,6 @@
         body {
             margin: 0;
             overflow: hidden;
-            font-family: courier, serif;
             background-color: #70c5ce;
             user-select: none;  /* Prevent text selection */
         }
@@ -39,24 +38,22 @@
             cursor: pointer;
             user-select: none;  /* Prevent text selection */
         }
-        #scoreContainer {
-            position: absolute;
-            bottom: 50px; /* Space for mobile button */
-            left: 20px;
-            display: flex;
-            align-items: center;
-        }
         #score, #highScore {
+            position: absolute;
             font-size: 24px;
             color: #fff;
             background-color: rgba(0, 0, 0, 0.5);
             padding: 10px;
             border-radius: 5px;
             user-select: none;  /* Prevent text selection */
-            margin-right: 10px; /* Space between score and high score */
+        }
+        #score {
+            top: 20px;
+            left: 20px;
         }
         #highScore {
-            margin-right: 0; /* No margin for the last item */
+            top: 20px;
+            right: 20px;
         }
         #title {
             position: absolute;
@@ -71,18 +68,6 @@
             display: block; /* Show title initially */
             user-select: none;  /* Prevent text selection */
         }
-        #mobileModeButton {
-            position: absolute;
-            bottom: 20px; /* Positioned above the score area */
-            right: 20px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -90,12 +75,9 @@
         <button id="startButton">Start Game</button>
     </div>
     <div id="title">Flappy Bird</div>
-    <div id="scoreContainer">
-        <div id="score">Score: 0</div>
-        <div id="highScore">High Score: 0</div>
-    </div>
-    <canvas id="gameCanvas"></canvas>
-    <button id="mobileModeButton">Mobile Mode Off</button>
+    <div id="score">Score: 0</div>
+    <div id="highScore">High Score: 0</div>
+    <canvas id="gameCanvas" width="600" height="480"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -104,49 +86,27 @@
         const scoreDisplay = document.getElementById('score');
         const highScoreDisplay = document.getElementById('highScore');
         const title = document.getElementById('title');
-        const mobileModeButton = document.getElementById('mobileModeButton');
-        const scoreContainer = document.getElementById('scoreContainer');
 
         let bird, pipes, frame, gameRunning, score;
         let highScore = parseInt(localStorage.getItem('highScore')) || 0;
-        let isMobileMode = false;
 
-        // Game settings
-        const defaultGravity = 0.04;
-        const defaultPipeSpeed = 1.2;
-        const defaultPipeInterval = 340;
-        const defaultJumpStrength = -2.5;
-        let gravity = defaultGravity;
-        let pipeSpeed = defaultPipeSpeed;
-        let pipeInterval = defaultPipeInterval;
-        let jumpStrength = defaultJumpStrength;
-
-        function resizeCanvas() {
-            const height = window.innerHeight - 100; // Adjusting for score and mobile mode button
-            const width = window.innerWidth;
-            canvas.width = width;
-            canvas.height = height;
-        }
-
-        function resizeScoreContainer() {
-            // Adjust score container width based on the width of its contents
-            scoreContainer.style.width = `${Math.max(scoreDisplay.offsetWidth, highScoreDisplay.offsetWidth) + 40}px`;
-        }
+        // Customize these values for different game dynamics
+        const gravity = 0.04;        // Gravity affecting the bird
+        const jumpStrength = -2.5;    // The lift value for bird's jump (negative to go up)
+        const pipeSpeed = 1.5;      // Speed at which pipes move
+        const pipeInterval = 240;  // Time between pipe spawns (in frames)
 
         function resetGame() {
-            resizeCanvas(); // Adjust canvas size on reset
-            resizeScoreContainer(); // Adjust score container size
-
             bird = {
                 x: 50,
                 y: canvas.height / 2,
                 width: 20,
                 height: 20,
                 gravity: gravity,
-                lift: jumpStrength,
+                lift: jumpStrength,     // Customizable jump strength
                 velocity: 0,
-                hitboxWidth: 16, // 80% of bird width
-                hitboxHeight: 16 // 80% of bird height
+                hitboxWidth: 10,        // Hitbox width (80% of bird width)
+                hitboxHeight: 10        // Hitbox height (80% of bird height)
             };
             pipes = [];
             frame = 0;
@@ -155,15 +115,6 @@
             updateHighScore();
             gameRunning = false;
             title.style.display = 'block'; // Show title when game is reset
-            updateGameSpeed();
-
-            // Initialize first 3 pipes
-            for (let i = 0; i < 3; i++) {
-                const xPosition = canvas.width / 2 + (i * (canvas.width / 3)); // Position pipes halfway through
-                const top = Math.random() * (canvas.height - pipeGap - 50) + 25;
-                const bottom = canvas.height - top - pipeGap;
-                pipes.push({ x: xPosition, top, bottom });
-            }
         }
 
         function startGame() {
@@ -193,11 +144,11 @@
             if (bird.y < 0) bird.y = 0;
         }
 
-        const pipeWidth = 60;
-        const pipeGap = 120;
+        const pipeWidth = 60;   // Width of the pipes
+        const pipeGap = 120;    // Gap between the top and bottom pipes
 
         function updatePipes() {
-            if (frame % pipeInterval === 0) {
+            if (frame % pipeInterval === 0) {  // Generate pipes less frequently
                 const top = Math.random() * (canvas.height - pipeGap - 50) + 25;
                 const bottom = canvas.height - top - pipeGap;
                 pipes.push({ x: canvas.width, top, bottom });
@@ -207,7 +158,7 @@
             });
             if (pipes[0] && pipes[0].x + pipeWidth < 0) {
                 pipes.shift();
-                score++;
+                score++;  // Increase score when a pipe goes out of view
                 updateScore();
                 if (score > highScore) {
                     highScore = score;
@@ -242,24 +193,6 @@
             highScoreDisplay.textContent = `High Score: ${highScore}`;
         }
 
-        function updateGameSpeed() {
-            if (isMobileMode) {
-                pipeSpeed = defaultPipeSpeed * 2; // Double the pipe speed
-                pipeInterval = defaultPipeInterval / 1.8; // Double the pipe spawn rate
-                gravity = defaultGravity * 1.6; // Increase gravity
-                jumpStrength = defaultJumpStrength * 1.1; // Increase jump height
-                mobileModeButton.textContent = 'Mobile Mode On';
-            } else {
-                pipeSpeed = defaultPipeSpeed;
-                pipeInterval = defaultPipeInterval;
-                gravity = defaultGravity;
-                jumpStrength = defaultJumpStrength;
-                mobileModeButton.textContent = 'Mobile Mode Off';
-            }
-            bird.gravity = gravity;
-            bird.lift = jumpStrength;
-        }
-
         function gameLoop() {
             if (!gameRunning) return;
 
@@ -281,7 +214,7 @@
 
         // Event listeners for keyboard, mouse, and touch inputs
         document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space') {
+            if (event.code === 'Space') {  // Spacebar for jump
                 jump();
             }
         });
@@ -293,7 +226,7 @@
         });
 
         canvas.addEventListener('touchstart', (event) => {
-            event.preventDefault();
+            event.preventDefault();  // Prevent scrolling on mobile
             if (gameRunning) {
                 jump();
             }
@@ -302,11 +235,6 @@
         startButton.addEventListener('click', () => {
             resetGame();
             startGame();
-        });
-
-        mobileModeButton.addEventListener('click', () => {
-            isMobileMode = !isMobileMode;
-            updateGameSpeed();
         });
 
         updateHighScore(); // Initialize high score display
