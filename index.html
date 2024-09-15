@@ -35,24 +35,36 @@
             font-size: 20px;
             cursor: pointer;
         }
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <div id="startScreen">
         <button id="startButton">Start Game</button>
     </div>
+    <div id="score">Score: 0</div>
     <canvas id="gameCanvas" width="600" height="480"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const startScreen = document.getElementById('startScreen');
         const startButton = document.getElementById('startButton');
+        const scoreDisplay = document.getElementById('score');
 
-        let bird, pipes, frame, gameRunning;
+        let bird, pipes, frame, gameRunning, score;
 
         // Customize these values for different game dynamics
         const gravity = 0.1;        // Gravity affecting the bird
-        const jumpStrength = -6;    // The lift value for bird's jump (negative to go up)
+        const jumpStrength = -4;    // The lift value for bird's jump (negative to go up)
         const pipeSpeed = 1.5;      // Speed at which pipes move
         const pipeInterval = 120;  // Time between pipe spawns (in frames)
 
@@ -65,9 +77,13 @@
                 gravity: gravity,
                 lift: jumpStrength,     // Customizable jump strength
                 velocity: 0,
+                hitboxWidth: 16,        // Hitbox width (80% of bird width)
+                hitboxHeight: 16        // Hitbox height (80% of bird height)
             };
             pipes = [];
             frame = 0;
+            score = 0;
+            updateScore();
             gameRunning = false;
         }
 
@@ -111,19 +127,25 @@
             });
             if (pipes[0] && pipes[0].x + pipeWidth < 0) {
                 pipes.shift();
+                score++;  // Increase score when a pipe goes out of view
+                updateScore();
             }
         }
 
         function checkCollisions() {
             pipes.forEach(pipe => {
                 if (bird.x < pipe.x + pipeWidth &&
-                    bird.x + bird.width > pipe.x &&
-                    (bird.y < pipe.top || bird.y + bird.height > canvas.height - pipe.bottom)) {
+                    bird.x + bird.hitboxWidth > pipe.x &&
+                    (bird.y < pipe.top || bird.y + bird.hitboxHeight > canvas.height - pipe.bottom)) {
                     alert('Game Over! Click OK to restart.');
                     resetGame();
                     startScreen.style.display = 'flex';
                 }
             });
+        }
+
+        function updateScore() {
+            scoreDisplay.textContent = `Score: ${score}`;
         }
 
         function gameLoop() {
