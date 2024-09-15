@@ -9,6 +9,7 @@
             margin: 0;
             overflow: hidden;
             background-color: #70c5ce;
+            user-select: none; /* Prevent text selection */
         }
         canvas {
             display: block;
@@ -45,6 +46,28 @@
             padding: 10px;
             border-radius: 5px;
         }
+        #highScore {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            font-size: 24px;
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            display: none; /* Hidden during gameplay */
+        }
         #mobileModeButton {
             position: absolute;
             bottom: 20px;
@@ -63,7 +86,9 @@
     <div id="startScreen">
         <button id="startButton">Start Game</button>
     </div>
+    <div id="title">Flappy Bird</div>
     <div id="score">Score: 0</div>
+    <div id="highScore">High Score: 0</div>
     <canvas id="gameCanvas" width="600" height="480"></canvas>
     <button id="mobileModeButton">Mobile Mode</button>
     <script>
@@ -72,9 +97,11 @@
         const startScreen = document.getElementById('startScreen');
         const startButton = document.getElementById('startButton');
         const scoreDisplay = document.getElementById('score');
+        const highScoreDisplay = document.getElementById('highScore');
+        const titleDisplay = document.getElementById('title');
         const mobileModeButton = document.getElementById('mobileModeButton');
 
-        let bird, pipes, frame, gameRunning, score;
+        let bird, pipes, frame, gameRunning, score, highScore;
         let isMobileMode = false;
 
         // Game settings
@@ -93,20 +120,23 @@
                 gravity: gravity,
                 lift: jumpStrength,
                 velocity: 0,
-                hitboxWidth: 10,
-                hitboxHeight: 10
+                hitboxWidth: 16, // 80% of bird width
+                hitboxHeight: 16 // 80% of bird height
             };
             pipes = [];
             frame = 0;
             score = 0;
             updateScore();
             gameRunning = false;
+            updateHighScore();
+            titleDisplay.style.display = 'none';
             updateGameSpeed();
         }
 
         function startGame() {
             gameRunning = true;
             startScreen.style.display = 'none';
+            titleDisplay.style.display = 'none';
             gameLoop();
         }
 
@@ -146,6 +176,10 @@
                 pipes.shift();
                 score++;
                 updateScore();
+                if (score > highScore) {
+                    highScore = score;
+                    updateHighScore();
+                }
             }
         }
 
@@ -154,15 +188,17 @@
                 if (bird.x < pipe.x + pipeWidth &&
                     bird.x + bird.hitboxWidth > pipe.x &&
                     (bird.y < pipe.top || bird.y + bird.hitboxHeight > canvas.height - pipe.bottom)) {
-                    alert('Game Over! Click OK to restart.');
-                    resetGame();
-                    startScreen.style.display = 'flex';
+                    endGame();
                 }
             });
         }
 
         function updateScore() {
             scoreDisplay.textContent = `Score: ${score}`;
+        }
+
+        function updateHighScore() {
+            highScoreDisplay.textContent = `High Score: ${highScore}`;
         }
 
         function updateGameSpeed() {
@@ -175,6 +211,13 @@
                 bird.gravity = gravity;
                 bird.lift = jumpStrength;
             }
+        }
+
+        function endGame() {
+            alert('Game Over! Click OK to restart.');
+            resetGame();
+            startScreen.style.display = 'flex';
+            titleDisplay.style.display = 'block';
         }
 
         function gameLoop() {
@@ -196,6 +239,7 @@
             }
         }
 
+        // Event listeners for keyboard, mouse, and touch inputs
         document.addEventListener('keydown', (event) => {
             if (event.code === 'Space') {
                 jump();
@@ -226,7 +270,10 @@
             startGame();
         });
 
-        resetGame();
+        // Load high score from localStorage
+        highScore = localStorage.getItem('highScore') || 0;
+        updateHighScore();
+        resetGame(); // Initial game setup
     </script>
 </body>
 </html>
