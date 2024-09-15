@@ -15,29 +15,61 @@
             margin: auto;
             background-color: #fff;
         }
+        #startScreen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        #startButton {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+    <div id="startScreen">
+        <button id="startButton">Start Game</button>
+    </div>
     <canvas id="gameCanvas" width="320" height="480"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const startButton = document.getElementById('startButton');
 
-        const bird = {
-            x: 50,
-            y: canvas.height / 2,
-            width: 20,
-            height: 20,
-            gravity: 0.6,
-            lift: -12,
-            velocity: 0,
-        };
+        let bird, pipes, frame, gameRunning;
 
-        const pipes = [];
-        const pipeWidth = 50;
-        const pipeGap = 100;
-        const pipeSpeed = 2;
-        let frame = 0;
+        function resetGame() {
+            bird = {
+                x: 50,
+                y: canvas.height / 2,
+                width: 20,
+                height: 20,
+                gravity: 0.6,
+                lift: -12,
+                velocity: 0,
+            };
+            pipes = [];
+            frame = 0;
+            gameRunning = false;
+        }
+
+        function startGame() {
+            gameRunning = true;
+            startScreen.style.display = 'none';
+            gameLoop();
+        }
 
         function drawBird() {
             ctx.fillStyle = 'yellow';
@@ -59,6 +91,10 @@
             if (bird.y < 0) bird.y = 0;
         }
 
+        const pipeWidth = 50;
+        const pipeGap = 100;
+        const pipeSpeed = 2;
+
         function updatePipes() {
             if (frame % 90 === 0) {
                 const top = Math.random() * (canvas.height - pipeGap - 50) + 25;
@@ -78,13 +114,16 @@
                 if (bird.x < pipe.x + pipeWidth &&
                     bird.x + bird.width > pipe.x &&
                     (bird.y < pipe.top || bird.y + bird.height > canvas.height - pipe.bottom)) {
-                    alert('Game Over!');
-                    document.location.reload();
+                    alert('Game Over! Click OK to restart.');
+                    resetGame();
+                    startScreen.style.display = 'flex';
                 }
             });
         }
 
         function gameLoop() {
+            if (!gameRunning) return;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBird();
             drawPipes();
@@ -96,10 +135,17 @@
         }
 
         document.addEventListener('keydown', () => {
-            bird.velocity = bird.lift;
+            if (gameRunning) {
+                bird.velocity = bird.lift;
+            }
         });
 
-        gameLoop();
+        startButton.addEventListener('click', () => {
+            resetGame();
+            startGame();
+        });
+
+        resetGame(); // Initial game setup
     </script>
 </body>
 </html>
