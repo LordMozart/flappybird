@@ -39,22 +39,24 @@
             cursor: pointer;
             user-select: none;  /* Prevent text selection */
         }
-        #score, #highScore {
+        #scoreContainer {
             position: absolute;
+            bottom: 50px; /* Space for mobile button */
+            left: 20px;
+            display: flex;
+            align-items: center;
+        }
+        #score, #highScore {
             font-size: 24px;
             color: #fff;
             background-color: rgba(0, 0, 0, 0.5);
             padding: 10px;
             border-radius: 5px;
             user-select: none;  /* Prevent text selection */
-        }
-        #score {
-            bottom: 50px; /* Space for mobile button */
-            left: 20px;
+            margin-right: 10px; /* Space between score and high score */
         }
         #highScore {
-            bottom: 10px; /* Ensure it's not overlapping with mobile button */
-            left: 20px;
+            margin-right: 0; /* No margin for the last item */
         }
         #title {
             position: absolute;
@@ -88,8 +90,10 @@
         <button id="startButton">Start Game</button>
     </div>
     <div id="title">Flappy Bird</div>
-    <div id="score">Score: 0</div>
-    <div id="highScore">High Score: 0</div>
+    <div id="scoreContainer">
+        <div id="score">Score: 0</div>
+        <div id="highScore">High Score: 0</div>
+    </div>
     <canvas id="gameCanvas"></canvas>
     <button id="mobileModeButton">Mobile Mode Off</button>
     <script>
@@ -101,6 +105,7 @@
         const highScoreDisplay = document.getElementById('highScore');
         const title = document.getElementById('title');
         const mobileModeButton = document.getElementById('mobileModeButton');
+        const scoreContainer = document.getElementById('scoreContainer');
 
         let bird, pipes, frame, gameRunning, score;
         let highScore = parseInt(localStorage.getItem('highScore')) || 0;
@@ -123,8 +128,15 @@
             canvas.height = height;
         }
 
+        function resizeScoreContainer() {
+            // Adjust score container width based on the width of its contents
+            scoreContainer.style.width = `${Math.max(scoreDisplay.offsetWidth, highScoreDisplay.offsetWidth) + 40}px`;
+        }
+
         function resetGame() {
             resizeCanvas(); // Adjust canvas size on reset
+            resizeScoreContainer(); // Adjust score container size
+
             bird = {
                 x: 50,
                 y: canvas.height / 2,
