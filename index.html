@@ -77,7 +77,8 @@
         const scoreDisplay = document.getElementById('score');
         const highScoreDisplay = document.getElementById('highScore');
 
-        let bird, pipes, frame, gameRunning, score, highScore;
+        let bird, pipes, frame, gameRunning, score;
+        let highScore = localStorage.getItem('highScore') || 0;
 
         // Customize these values for different game dynamics
         const gravity = 0.04;        // Gravity affecting the bird
@@ -156,6 +157,7 @@
                     (bird.y < pipe.top || bird.y + bird.hitboxHeight > canvas.height - pipe.bottom)) {
                     if (score > highScore) {
                         highScore = score;
+                        localStorage.setItem('highScore', highScore);
                         updateHighScore();
                     }
                     alert('Game Over! Click OK to restart.');
@@ -217,9 +219,7 @@
             startGame();
         });
 
-        // Initialize high score
-        highScore = 0;
-        updateHighScore();
+        updateHighScore(); // Initialize high score display
 
         resetGame(); // Initial game setup
     </script>
