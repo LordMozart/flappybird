@@ -45,6 +45,16 @@
             padding: 10px;
             border-radius: 5px;
         }
+        #highScore {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -52,6 +62,7 @@
         <button id="startButton">Start Game</button>
     </div>
     <div id="score">Score: 0</div>
+    <div id="highScore">High Score: 0</div>
     <canvas id="gameCanvas" width="600" height="480"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -59,8 +70,9 @@
         const startScreen = document.getElementById('startScreen');
         const startButton = document.getElementById('startButton');
         const scoreDisplay = document.getElementById('score');
+        const highScoreDisplay = document.getElementById('highScore');
 
-        let bird, pipes, frame, gameRunning, score;
+        let bird, pipes, frame, gameRunning, score, highScore;
 
         // Customize these values for different game dynamics
         const gravity = 0.04;        // Gravity affecting the bird
@@ -137,6 +149,10 @@
                 if (bird.x < pipe.x + pipeWidth &&
                     bird.x + bird.hitboxWidth > pipe.x &&
                     (bird.y < pipe.top || bird.y + bird.hitboxHeight > canvas.height - pipe.bottom)) {
+                    if (score > highScore) {
+                        highScore = score;
+                        updateHighScore();
+                    }
                     alert('Game Over! Click OK to restart.');
                     resetGame();
                     startScreen.style.display = 'flex';
@@ -146,6 +162,10 @@
 
         function updateScore() {
             scoreDisplay.textContent = `Score: ${score}`;
+        }
+
+        function updateHighScore() {
+            highScoreDisplay.textContent = `High Score: ${highScore}`;
         }
 
         function gameLoop() {
@@ -191,6 +211,10 @@
             resetGame();
             startGame();
         });
+
+        // Initialize high score
+        highScore = 0;
+        updateHighScore();
 
         resetGame(); // Initial game setup
     </script>
