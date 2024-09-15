@@ -161,9 +161,29 @@
             requestAnimationFrame(gameLoop);
         }
 
-        document.addEventListener('keydown', () => {
+        function jump() {
             if (gameRunning) {
                 bird.velocity = bird.lift;
+            }
+        }
+
+        // Event listeners for keyboard, mouse, and touch inputs
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {  // Spacebar for jump
+                jump();
+            }
+        });
+
+        document.addEventListener('click', () => {
+            if (gameRunning) {
+                jump();
+            }
+        });
+
+        canvas.addEventListener('touchstart', (event) => {
+            event.preventDefault();  // Prevent scrolling on mobile
+            if (gameRunning) {
+                jump();
             }
         });
 
