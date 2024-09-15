@@ -9,7 +9,6 @@
             margin: 0;
             overflow: hidden;
             background-color: #70c5ce;
-            user-select: none;  /* Prevent text selection */
         }
         canvas {
             display: block;
@@ -26,7 +25,6 @@
             width: 100vw;
             height: 100vh;
             background-color: rgba(0, 0, 0, 0.5);
-            user-select: none;  /* Prevent text selection */
         }
         #startButton {
             padding: 10px 20px;
@@ -36,37 +34,28 @@
             border-radius: 5px;
             font-size: 20px;
             cursor: pointer;
-            user-select: none;  /* Prevent text selection */
         }
-        #score, #highScore {
+        #score {
             position: absolute;
+            top: 20px;
+            left: 20px;
             font-size: 24px;
             color: #fff;
             background-color: rgba(0, 0, 0, 0.5);
             padding: 10px;
             border-radius: 5px;
-            user-select: none;  /* Prevent text selection */
         }
-        #score {
-            top: 20px;
-            left: 20px;
-        }
-        #highScore {
-            top: 20px;
-            right: 20px;
-        }
-        #title {
+        #mobileModeButton {
             position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 32px;
-            color: #fff;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
             border-radius: 5px;
-            display: block; /* Show title initially */
-            user-select: none;  /* Prevent text selection */
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -74,27 +63,26 @@
     <div id="startScreen">
         <button id="startButton">Start Game</button>
     </div>
-    <div id="title">Flappy Bird</div>
     <div id="score">Score: 0</div>
-    <div id="highScore">High Score: 0</div>
     <canvas id="gameCanvas" width="600" height="480"></canvas>
+    <button id="mobileModeButton">Mobile Mode</button>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const startScreen = document.getElementById('startScreen');
         const startButton = document.getElementById('startButton');
         const scoreDisplay = document.getElementById('score');
-        const highScoreDisplay = document.getElementById('highScore');
-        const title = document.getElementById('title');
+        const mobileModeButton = document.getElementById('mobileModeButton');
 
         let bird, pipes, frame, gameRunning, score;
-        let highScore = parseInt(localStorage.getItem('highScore')) || 0;
+        let isMobileMode = false;
 
-        // Customize these values for different game dynamics
-        const gravity = 0.04;        // Gravity affecting the bird
-        const jumpStrength = -2.5;    // The lift value for bird's jump (negative to go up)
-        const pipeSpeed = 1.5;      // Speed at which pipes move
-        const pipeInterval = 240;  // Time between pipe spawns (in frames)
+        // Game settings
+        const gravity = 0.04;
+        const jumpStrength = -2.5;
+        let pipeSpeed = 1.5;
+        const pipeInterval = 240;
+        const mobileSpeedMultiplier = 2;
 
         function resetGame() {
             bird = {
@@ -103,24 +91,22 @@
                 width: 20,
                 height: 20,
                 gravity: gravity,
-                lift: jumpStrength,     // Customizable jump strength
+                lift: jumpStrength,
                 velocity: 0,
-                hitboxWidth: 10,        // Hitbox width (80% of bird width)
-                hitboxHeight: 10        // Hitbox height (80% of bird height)
+                hitboxWidth: 10,
+                hitboxHeight: 10
             };
             pipes = [];
             frame = 0;
             score = 0;
             updateScore();
-            updateHighScore();
             gameRunning = false;
-            title.style.display = 'block'; // Show title when game is reset
+            updateGameSpeed();
         }
 
         function startGame() {
             gameRunning = true;
             startScreen.style.display = 'none';
-            title.style.display = 'none'; // Hide title during gameplay
             gameLoop();
         }
 
@@ -144,11 +130,11 @@
             if (bird.y < 0) bird.y = 0;
         }
 
-        const pipeWidth = 60;   // Width of the pipes
-        const pipeGap = 120;    // Gap between the top and bottom pipes
+        const pipeWidth = 60;
+        const pipeGap = 120;
 
         function updatePipes() {
-            if (frame % pipeInterval === 0) {  // Generate pipes less frequently
+            if (frame % pipeInterval === 0) {
                 const top = Math.random() * (canvas.height - pipeGap - 50) + 25;
                 const bottom = canvas.height - top - pipeGap;
                 pipes.push({ x: canvas.width, top, bottom });
@@ -158,13 +144,8 @@
             });
             if (pipes[0] && pipes[0].x + pipeWidth < 0) {
                 pipes.shift();
-                score++;  // Increase score when a pipe goes out of view
+                score++;
                 updateScore();
-                if (score > highScore) {
-                    highScore = score;
-                    localStorage.setItem('highScore', highScore);
-                    updateHighScore();
-                }
             }
         }
 
@@ -173,11 +154,6 @@
                 if (bird.x < pipe.x + pipeWidth &&
                     bird.x + bird.hitboxWidth > pipe.x &&
                     (bird.y < pipe.top || bird.y + bird.hitboxHeight > canvas.height - pipe.bottom)) {
-                    if (score > highScore) {
-                        highScore = score;
-                        localStorage.setItem('highScore', highScore);
-                        updateHighScore();
-                    }
                     alert('Game Over! Click OK to restart.');
                     resetGame();
                     startScreen.style.display = 'flex';
@@ -189,8 +165,16 @@
             scoreDisplay.textContent = `Score: ${score}`;
         }
 
-        function updateHighScore() {
-            highScoreDisplay.textContent = `High Score: ${highScore}`;
+        function updateGameSpeed() {
+            if (isMobileMode) {
+                pipeSpeed = 1.5;
+                bird.gravity = gravity * mobileSpeedMultiplier;
+                bird.lift = jumpStrength * mobileSpeedMultiplier;
+            } else {
+                pipeSpeed = 1.5;
+                bird.gravity = gravity;
+                bird.lift = jumpStrength;
+            }
         }
 
         function gameLoop() {
@@ -212,9 +196,8 @@
             }
         }
 
-        // Event listeners for keyboard, mouse, and touch inputs
         document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space') {  // Spacebar for jump
+            if (event.code === 'Space') {
                 jump();
             }
         });
@@ -226,10 +209,16 @@
         });
 
         canvas.addEventListener('touchstart', (event) => {
-            event.preventDefault();  // Prevent scrolling on mobile
+            event.preventDefault();
             if (gameRunning) {
                 jump();
             }
+        });
+
+        mobileModeButton.addEventListener('click', () => {
+            isMobileMode = !isMobileMode;
+            mobileModeButton.textContent = isMobileMode ? 'Mobile Mode On' : 'Mobile Mode Off';
+            updateGameSpeed();
         });
 
         startButton.addEventListener('click', () => {
@@ -237,9 +226,7 @@
             startGame();
         });
 
-        updateHighScore(); // Initialize high score display
-
-        resetGame(); // Initial game setup
+        resetGame();
     </script>
 </body>
 </html>
