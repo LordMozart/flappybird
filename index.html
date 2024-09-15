@@ -50,14 +50,20 @@
 
         let bird, pipes, frame, gameRunning;
 
+        // Customize these values for different game dynamics
+        const gravity = 0.1;        // Gravity affecting the bird
+        const jumpStrength = -6;    // The lift value for bird's jump (negative to go up)
+        const pipeSpeed = 1.5;      // Speed at which pipes move
+        const pipeInterval = 120;  // Time between pipe spawns (in frames)
+
         function resetGame() {
             bird = {
                 x: 50,
                 y: canvas.height / 2,
                 width: 20,
                 height: 20,
-                gravity: 0.1,  // Slower fall speed
-                lift: -10,     // Lift value
+                gravity: gravity,
+                lift: jumpStrength,     // Customizable jump strength
                 velocity: 0,
             };
             pipes = [];
@@ -93,8 +99,6 @@
 
         const pipeWidth = 60;   // Width of the pipes
         const pipeGap = 120;    // Gap between the top and bottom pipes
-        const pipeSpeed = 1.5;  // Speed at which pipes move
-        const pipeInterval = 120; // Time between pipe spawns (in frames)
 
         function updatePipes() {
             if (frame % pipeInterval === 0) {  // Generate pipes less frequently
