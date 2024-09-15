@@ -9,7 +9,7 @@
             margin: 0;
             overflow: hidden;
             background-color: #70c5ce;
-            user-select: none; /* Prevent text selection */
+            user-select: none;  /* Prevent text selection */
         }
         canvas {
             display: block;
@@ -26,6 +26,7 @@
             width: 100vw;
             height: 100vh;
             background-color: rgba(0, 0, 0, 0.5);
+            user-select: none;  /* Prevent text selection */
         }
         #startButton {
             padding: 10px 20px;
@@ -35,38 +36,37 @@
             border-radius: 5px;
             font-size: 20px;
             cursor: pointer;
+            user-select: none;  /* Prevent text selection */
+        }
+        #score, #highScore {
+            position: absolute;
+            font-size: 24px;
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            user-select: none;  /* Prevent text selection */
         }
         #score {
-            position: absolute;
             top: 20px;
             left: 20px;
-            font-size: 24px;
-            color: #fff;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
         }
         #highScore {
-            position: absolute;
-            top: 60px;
-            left: 20px;
-            font-size: 24px;
-            color: #fff;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
+            top: 50px; /* Moved down by 30px */
+            right: 20px;
         }
         #title {
             position: absolute;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 36px;
+            font-size: 32px;
             color: #fff;
             background-color: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-            display: none; /* Hidden during gameplay */
+            padding: 10px;
+            border-radius: 5px;
+            display: block; /* Show title initially */
+            user-select: none;  /* Prevent text selection */
         }
         #mobileModeButton {
             position: absolute;
@@ -90,7 +90,7 @@
     <div id="score">Score: 0</div>
     <div id="highScore">High Score: 0</div>
     <canvas id="gameCanvas" width="600" height="480"></canvas>
-    <button id="mobileModeButton">Mobile Mode</button>
+    <button id="mobileModeButton">Mobile Mode Off</button>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -98,18 +98,19 @@
         const startButton = document.getElementById('startButton');
         const scoreDisplay = document.getElementById('score');
         const highScoreDisplay = document.getElementById('highScore');
-        const titleDisplay = document.getElementById('title');
+        const title = document.getElementById('title');
         const mobileModeButton = document.getElementById('mobileModeButton');
 
-        let bird, pipes, frame, gameRunning, score, highScore;
+        let bird, pipes, frame, gameRunning, score;
+        let highScore = parseInt(localStorage.getItem('highScore')) || 0;
         let isMobileMode = false;
 
         // Game settings
-        const gravity = 0.04;
+        const defaultGravity = 0.04;
         const jumpStrength = -2.5;
+        let gravity = defaultGravity;
         let pipeSpeed = 1.5;
         const pipeInterval = 240;
-        const mobileSpeedMultiplier = 2;
 
         function resetGame() {
             bird = {
@@ -127,16 +128,16 @@
             frame = 0;
             score = 0;
             updateScore();
-            gameRunning = false;
             updateHighScore();
-            titleDisplay.style.display = 'none';
+            gameRunning = false;
+            title.style.display = 'block'; // Show title when game is reset
             updateGameSpeed();
         }
 
         function startGame() {
             gameRunning = true;
             startScreen.style.display = 'none';
-            titleDisplay.style.display = 'none';
+            title.style.display = 'none'; // Hide title during gameplay
             gameLoop();
         }
 
@@ -178,6 +179,7 @@
                 updateScore();
                 if (score > highScore) {
                     highScore = score;
+                    localStorage.setItem('highScore', highScore);
                     updateHighScore();
                 }
             }
@@ -188,7 +190,14 @@
                 if (bird.x < pipe.x + pipeWidth &&
                     bird.x + bird.hitboxWidth > pipe.x &&
                     (bird.y < pipe.top || bird.y + bird.hitboxHeight > canvas.height - pipe.bottom)) {
-                    endGame();
+                    if (score > highScore) {
+                        highScore = score;
+                        localStorage.setItem('highScore', highScore);
+                        updateHighScore();
+                    }
+                    alert('Game Over! Click OK to restart.');
+                    resetGame();
+                    startScreen.style.display = 'flex';
                 }
             });
         }
@@ -203,21 +212,13 @@
 
         function updateGameSpeed() {
             if (isMobileMode) {
-                pipeSpeed = 1.5;
-                bird.gravity = gravity * mobileSpeedMultiplier;
-                bird.lift = jumpStrength * mobileSpeedMultiplier;
+                pipeSpeed = 1.5 * 2; // Double the pipe speed
+                gravity = defaultGravity * 2; // Double the gravity
             } else {
                 pipeSpeed = 1.5;
-                bird.gravity = gravity;
-                bird.lift = jumpStrength;
+                gravity = defaultGravity;
             }
-        }
-
-        function endGame() {
-            alert('Game Over! Click OK to restart.');
-            resetGame();
-            startScreen.style.display = 'flex';
-            titleDisplay.style.display = 'block';
+            bird.gravity = gravity;
         }
 
         function gameLoop() {
@@ -253,7 +254,7 @@
         });
 
         canvas.addEventListener('touchstart', (event) => {
-            event.preventDefault();
+            event.preventDefault(); // Prevent scrolling on mobile
             if (gameRunning) {
                 jump();
             }
@@ -270,9 +271,8 @@
             startGame();
         });
 
-        // Load high score from localStorage
-        highScore = localStorage.getItem('highScore') || 0;
-        updateHighScore();
+        updateHighScore(); // Initialize high score display
+
         resetGame(); // Initial game setup
     </script>
 </body>
