@@ -48,13 +48,12 @@
             user-select: none;  /* Prevent text selection */
         }
         #score {
-            bottom: 20px;
+            bottom: 50px; /* Space for mobile button */
             left: 20px;
         }
         #highScore {
-            bottom: 20px;
-            left: 20px; /* Align with the score */
-            margin-top: 40px; /* Space between score and high score */
+            bottom: 10px; /* Ensure it's not overlapping with mobile button */
+            left: 20px;
         }
         #title {
             position: absolute;
@@ -71,7 +70,7 @@
         }
         #mobileModeButton {
             position: absolute;
-            bottom: 20px;
+            bottom: 20px; /* Positioned above the score area */
             right: 20px;
             padding: 10px 20px;
             background-color: #007bff;
@@ -90,7 +89,7 @@
     <div id="title">Flappy Bird</div>
     <div id="score">Score: 0</div>
     <div id="highScore">High Score: 0</div>
-    <canvas id="gameCanvas" width="600" height="480"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <button id="mobileModeButton">Mobile Mode Off</button>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -110,12 +109,21 @@
         const defaultGravity = 0.04;
         const defaultPipeSpeed = 1.5;
         const defaultPipeInterval = 240;
-        const jumpStrength = -2.5;
+        const defaultJumpStrength = -2.5;
         let gravity = defaultGravity;
         let pipeSpeed = defaultPipeSpeed;
         let pipeInterval = defaultPipeInterval;
+        let jumpStrength = defaultJumpStrength;
+
+        function resizeCanvas() {
+            const height = window.innerHeight - 100; // Adjusting for score and mobile mode button
+            const width = window.innerWidth;
+            canvas.width = width;
+            canvas.height = height;
+        }
 
         function resetGame() {
+            resizeCanvas(); // Adjust canvas size on reset
             bird = {
                 x: 50,
                 y: canvas.height / 2,
@@ -217,14 +225,18 @@
             if (isMobileMode) {
                 pipeSpeed = defaultPipeSpeed * 2; // Double the pipe speed
                 pipeInterval = defaultPipeInterval / 2; // Double the pipe spawn rate
-                gravity = defaultGravity * 2; // Double the gravity
+                gravity = defaultGravity * 1.5; // Increase gravity
+                jumpStrength = defaultJumpStrength * 1.5; // Increase jump height
                 mobileModeButton.textContent = 'Mobile Mode On';
             } else {
                 pipeSpeed = defaultPipeSpeed;
                 pipeInterval = defaultPipeInterval;
                 gravity = defaultGravity;
+                jumpStrength = defaultJumpStrength;
                 mobileModeButton.textContent = 'Mobile Mode Off';
             }
+            bird.gravity = gravity;
+            bird.lift = jumpStrength;
         }
 
         function gameLoop() {
@@ -260,20 +272,20 @@
         });
 
         canvas.addEventListener('touchstart', (event) => {
-            event.preventDefault(); // Prevent scrolling on mobile
+            event.preventDefault();
             if (gameRunning) {
                 jump();
             }
         });
 
-        mobileModeButton.addEventListener('click', () => {
-            isMobileMode = !isMobileMode;
-            updateGameSpeed();
-        });
-
         startButton.addEventListener('click', () => {
             resetGame();
             startGame();
+        });
+
+        mobileModeButton.addEventListener('click', () => {
+            isMobileMode = !isMobileMode;
+            updateGameSpeed();
         });
 
         updateHighScore(); // Initialize high score display
